@@ -4,7 +4,7 @@ const app = express();
 
 // Middleware to log incoming headers (for debugging)
 app.use((req, res, next) => {
-  console.log(req.headers.host);   // Target server
+  console.log(req.headers.host); // Target server
   console.log(req.headers.origin); // Origin of request (frontend)
   // res.custom_fn = function(){
   //   console.log('hi')

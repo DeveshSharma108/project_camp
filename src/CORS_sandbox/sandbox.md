@@ -7,12 +7,13 @@
 ### 📂 Files
 
 - **`test_fronted_simple` + `test_backend_simple.js`**  
-  → Example where the browser **does not send a preflight request** (simple request).  
+  → Example where the browser **does not send a preflight request** (simple request).
 
 - **`test_frontend_preflight.js` + `test_backend_preflight.js`**  
-  → Example where the browser **does send a preflight request** (non-simple request with custom headers).  
+  → Example where the browser **does send a preflight request** (non-simple request with custom headers).
 
-After starting the respective servers:  
+After starting the respective servers:
+
 > Open **DevTools → Network** to see the requests.
 
 ---
@@ -47,7 +48,7 @@ A **preflight** happens when:
 - `Content-Type` is not one of the three “simple” ones (e.g. `application/json`)
 
 ➡️ The browser first sends an `OPTIONS` request (preflight).  
-➡️ If the backend responds with the correct **CORS headers**, then the browser sends the actual request (e.g. `POST`).  
+➡️ If the backend responds with the correct **CORS headers**, then the browser sends the actual request (e.g. `POST`).
 
 ---
 
@@ -63,11 +64,11 @@ Backend must set the following headers to allow cross-origin requests:
 
 ### 📊 Summary
 
-- **Host header** = where the request is going (**backend**).  
-- **Origin header** = where the request is coming from (**frontend**).  
+- **Host header** = where the request is going (**backend**).
+- **Origin header** = where the request is coming from (**frontend**).
 
-- **No preflight** → browser sends request directly.  
-- **Preflight** → browser first sends `OPTIONS`, then the actual request.  
+- **No preflight** → browser sends request directly.
+- **Preflight** → browser first sends `OPTIONS`, then the actual request.
 
 ---
 
