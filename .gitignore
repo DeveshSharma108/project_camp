@@ -1,5 +1,8 @@
 .env
 node_modules
-temp_check_up.js
+mutating_res_object.js
 PRD.md
 learning_while_project.txt
+
+logs/*
+!logs/.gitkeep
