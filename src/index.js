@@ -19,7 +19,7 @@ try {
     throw error;
   }
 } catch (error) {
-  console.error(error)
+  console.error(error);
   console.log("Ending the process ⚙️  due to error");
   process.exit(1);
 }

@@ -1,7 +1,7 @@
 import { ApiResponse } from "../utils/apiResponse.js";
-import {asyncHandler} from "../utils/asyncHandler.js"
+import { asyncHandler } from "../utils/asyncHandler.js";
 import { healthLogger } from "../utils/healthCheckLogger.js";
-import os from "os"
+import os from "os";
 
 // Using the higher order function asyncHandler ........
 // this style requires needs intensive use of try catch ....
@@ -13,9 +13,7 @@ import os from "os"
 //   }
 // };
 
-
-const healthCheck = asyncHandler(async (req,res) => {
-  
+const healthCheck = asyncHandler(async (req, res) => {
   const payload = {
     status: "OK",
     timestamp: new Date().toISOString(),
@@ -29,9 +27,8 @@ const healthCheck = asyncHandler(async (req,res) => {
     user_agent: req.get("user-agent"),
   };
 
-  await healthLogger(payload)
+  await healthLogger(payload);
   res.status(200).json(new ApiResponse(200, payload));
-})
-
+});
 
 export default healthCheck;
