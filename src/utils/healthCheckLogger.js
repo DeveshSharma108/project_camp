@@ -23,7 +23,7 @@ const healthLogger = async (payload) => {
 
     const file_path = path.join(logs_dir,'healthCheck.logs')
     
-    const log_entry = `[${payload.timestamp}] status=${payload.status} node=${payload.node_version} uptime=${payload.uptime} memory=${payload.memory_usage} method=${payload.method} url=${payload.url} ip=${payload.ip} ua="${payload.user_agent}"\n`;
+    const log_entry = `\n[${payload.timestamp}] status=${payload.status} node=${payload.node_version} uptime=${payload.uptime} memory=${payload.memory_usage} method=${payload.method} url=${payload.url} ip=${payload.ip} ua="${payload.user_agent}"\n`;
     
     fs.appendFileSync(file_path,log_entry)
 
