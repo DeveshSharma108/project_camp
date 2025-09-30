@@ -74,7 +74,7 @@ const sendMail = async function (options) {
 
   const message = {
     from: '"Project Camp" <maybelle.upton40@ethereal.email>',
-    to: "someone@example.com",
+    to: options.email,
     subject: options.subject,
     text: emailPlainText,
     html: emailHTML,
