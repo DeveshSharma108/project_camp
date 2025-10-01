@@ -6,6 +6,7 @@ import {
   getCurrentUser,
   verifyEmail,
   resendVerificationEmail,
+  refreshAccessToken,
 } from "../controllers/auth.controller.js";
 import { validate } from "../middlewares/validate.middleware.js";
 import { registerSchema, loginSchema } from "../validators/auth.validators.js";
@@ -15,6 +16,7 @@ const router = Router();
 router.route("/register").post(validate(registerSchema), registerUser);
 router.route("/login").post(validate(loginSchema), loginUser);
 router.route("/verify-email/:verificationToken").get(verifyEmail);
+router.route("/refresh-token").post(refreshAccessToken);
 
 // protected routes
 router.route("/logout").post(verifyJWT, logoutUser);

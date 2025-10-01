@@ -9,6 +9,7 @@ import { User } from "../models/user.model.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 import { getCookieOption } from "../utils/cookieOption.js";
 import crypto from "crypto";
+import jwt from "jsonwebtoken";
 
 const generateAccessAndRefreshToken = async function (userId) {
   try {
@@ -221,6 +222,52 @@ const resendVerificationEmail = asyncHandler(async (req, res) => {
     .json(new ApiResponse(200, null, "Verification email sent to your inbox."));
 });
 
+// refreshing access and refresh token .......... (when the access token gets expired )
+const refreshAccessToken = asyncHandler(async (req, res) => {
+  // console.log(req.cookies);
+  const incomingRefreshToken =
+    req.cookies?.refreshToken || req.body.refreshToken;
+
+  if (!incomingRefreshToken) {
+    throw new ApiError(401, "Unauthorized access");
+  }
+
+  let decodedToken;
+  try {
+    decodedToken = jwt.verify(
+      incomingRefreshToken,
+      process.env.REFRESH_TOKEN_SECRET,
+    );
+  } catch (error) {
+    console.error(error);
+    throw new ApiError(401, "Invalid or expired token");
+  }
+
+  const user = await User.findById(decodedToken._id).select(
+    "-password -refreshToken -emailVerificationToken -emailVerificationExpiry",
+  );
+
+  // Even though the token is valid, the user might have been deleted from the DB
+  if (!user) {
+    throw new ApiError(404, "User not found");
+  }
+
+  // if everything is fine
+
+  // getting the new 👇 access and refresh token
+  const { accessToken, refreshToken } = await generateAccessAndRefreshToken(
+    user._id,
+  );
+  // new refresh token is saved in DB in the generateAccessAndRefreshToken function
+  const options = getCookieOption();
+
+  return res
+    .status(200)
+    .cookie("accessToken", accessToken, options)
+    .cookie("refreshToken", refreshToken, options)
+    .json(new ApiResponse(200, user, "Tokens refreshed successfully !"));
+});
+
 export {
   registerUser,
   loginUser,
@@ -228,4 +275,5 @@ export {
   getCurrentUser,
   verifyEmail,
   resendVerificationEmail,
+  refreshAccessToken,
 };
