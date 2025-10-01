@@ -8,6 +8,7 @@ import {
 import { User } from "../models/user.model.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 import { getCookieOption } from "../utils/cookieOption.js";
+import crypto from "crypto";
 
 const generateAccessAndRefreshToken = async function (userId) {
   try {
@@ -56,7 +57,7 @@ const registerUser = asyncHandler(async (req, res) => {
     subject: "Please verify your email.",
     emailContent: emailVerficationContent(
       newUser.username,
-      `${req.protocol}://${req.get("host")}/api/v1/auth/verify-email/:${unhashedToken}`,
+      `${req.protocol}://${req.get("host")}/api/v1/auth/verify-email/${unhashedToken}`,
     ),
   });
 
@@ -141,4 +142,90 @@ const logoutUser = asyncHandler(async (req, res) => {
     .json(new ApiResponse(200, "Log out successful........"));
 });
 
-export { registerUser, loginUser, logoutUser };
+const getCurrentUser = asyncHandler(async (req, res) => {
+  return res
+    .status(200)
+    .json(new ApiResponse(200, req.user, "User fetched successfully."));
+});
+
+const verifyEmail = asyncHandler(async (req, res) => {
+  // getting the unhashed token from the url
+  const unhashedToken = req.params.verificationToken;
+  // console.log("unhashed", unhashedToken);
+  if (!unhashedToken) {
+    throw new ApiError(400, "Verification token is missing ....");
+  }
+
+  // if token is present verify it by hashing and checking the expiry
+  const hashedToken = crypto
+    .createHash("sha256")
+    .update(unhashedToken)
+    .digest("hex");
+
+  // console.log("hashed", hashedToken);
+  // find a user in the db having same unexpired emailVerificationToken
+  const verifiedUser = await User.findOne({
+    emailVerificationToken: hashedToken,
+    emailVerificationExpiry: { $gt: Date.now() },
+  });
+
+  if (!verifiedUser) {
+    throw new ApiError(400, "Token is invalid/expired");
+  }
+
+  verifiedUser.isEmailVerified = true;
+  // since user is verified we can now set emailVerificaton token and expiry to null or ""
+  verifiedUser.emailVerificationToken = "";
+  verifiedUser.emailVerificationExpiry = "";
+
+  // save the user
+  await verifiedUser.save({ validateBeforeSave: false });
+
+  return res
+    .status(200)
+    .json(new ApiResponse(200, null, "email verification done ...."));
+});
+
+// According to the app design to request verification email again user must be logged in .......
+const resendVerificationEmail = asyncHandler(async (req, res) => {
+  const loggedInUser = await User.findById(req.user._id);
+  // In hypothetical case if user doesn't exist
+  if (!loggedInUser) {
+    throw new ApiError(404, "User doesn't exist");
+  }
+
+  // if user is already email verified
+  if (loggedInUser.isEmailVerified) {
+    throw new ApiError(409, "User already verified ....");
+  }
+
+  const { unhashedToken, hashedToken, tokenExpiry } =
+    loggedInUser.generateTempToken();
+
+  loggedInUser.emailVerificationToken = hashedToken;
+  loggedInUser.emailVerificationExpiry = tokenExpiry;
+
+  await loggedInUser.save({ validateBeforeSave: false });
+
+  await sendMail({
+    email: loggedInUser?.email,
+    subject: "Please verify your email.",
+    emailContent: emailVerficationContent(
+      loggedInUser.username,
+      `${req.protocol}://${req.get("host")}/api/v1/auth/verify-email/${unhashedToken}`,
+    ),
+  });
+
+  return res
+    .status(200)
+    .json(new ApiResponse(200, null, "Verification email sent to your inbox."));
+});
+
+export {
+  registerUser,
+  loginUser,
+  logoutUser,
+  getCurrentUser,
+  verifyEmail,
+  resendVerificationEmail,
+};

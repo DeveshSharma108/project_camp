@@ -113,7 +113,7 @@ userSchema.methods.generateTempToken = function () {
     .createHash("sha256")
     .update(unhashedToken)
     .digest("hex");
-  const tokenExpiry = Date.now() + 20 * 60 * 1000; // added 20 seconds in miliseconds format
+  const tokenExpiry = Date.now() + 20 * 60 * 1000; // added 20 minutes in miliseconds format
 
   return { unhashedToken, hashedToken, tokenExpiry };
 };
