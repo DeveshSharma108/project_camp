@@ -30,4 +30,13 @@ console.log(result.error.issues)
 console.log(typeof registerSchema);
 */
 
-export { registerSchema };
+const loginSchema = z.object({
+  email: z.email("Please enter a valid mail"),
+
+  password: z
+    .string()
+    .trim()
+    .min(6, "Password must be at least 6 characters long"),
+});
+
+export { registerSchema, loginSchema };

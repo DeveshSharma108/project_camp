@@ -12,7 +12,9 @@ try {
   await connectDB();
   try {
     app.listen(port, () => {
-      console.log(`✅ Server started on port ${port}`);
+      console.log(
+        `✅ Server started on port ${port} running in ${process.env.NODE_ENV} mode`,
+      );
     });
   } catch (error) {
     console.error("❌ Error while starting app server");

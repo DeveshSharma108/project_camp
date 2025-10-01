@@ -7,6 +7,7 @@ import {
 } from "../utils/mail.js";
 import { User } from "../models/user.model.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
+import { getCookieOption } from "../utils/cookieOption.js";
 
 const generateAccessAndRefreshToken = async function (userId) {
   try {
@@ -18,6 +19,7 @@ const generateAccessAndRefreshToken = async function (userId) {
     await user.save({ validateBeforeSave: false });
     return { accessToken, refreshToken };
   } catch (error) {
+    // console.error(error);
     throw new ApiError(
       500,
       "Something went wrong while generating access and refresh tokens .....",
@@ -77,4 +79,43 @@ const registerUser = asyncHandler(async (req, res) => {
     );
 });
 
-export { registerUser };
+const loginUser = asyncHandler(async (req, res) => {
+  // user will give email and password
+
+  const { email, password } = req.body;
+
+  if (!email) {
+    throw new ApiError(409, "email is required for log-in ....");
+  }
+
+  const existingUser = await User.findOne({ email });
+  if (!existingUser) {
+    throw new ApiError(409, "User with this email doesn't exists ....");
+  }
+
+  // if user exists verify password
+  const passwordVerificationResult =
+    await existingUser.verifyPassword(password);
+
+  if (passwordVerificationResult === false) {
+    throw new ApiError(409, "Incorrect password");
+  }
+
+  const { accessToken, refreshToken } = await generateAccessAndRefreshToken(
+    existingUser._id,
+  );
+
+  const loggedInUser = await User.findById(existingUser._id).select(
+    "-password -refreshToken -emailVerificationToken -emailVerificationExpiry",
+  );
+
+  const options = getCookieOption();
+
+  return res
+    .status(200)
+    .cookie("accessToken", accessToken, options)
+    .cookie("refreshToken", refreshToken, options)
+    .json(new ApiResponse(200, loggedInUser, "User logged in successfuly"));
+});
+
+export { registerUser, loginUser };

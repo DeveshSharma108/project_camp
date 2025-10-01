@@ -81,7 +81,7 @@ userSchema.pre("save", async function (next) {
 
 // to verify the input password......
 userSchema.methods.verifyPassword = async function (password) {
-  result = await bcrypt.compare(password, this.password); // returns a boolean value
+  let result = await bcrypt.compare(password, this.password); // returns a boolean value
   return result;
 };
 
@@ -93,7 +93,7 @@ userSchema.methods.generateAccessToken = function () {
       username: this.username,
     },
     process.env.ACCESS_TOKEN_SECRET,
-    { expiresIn: ACCESS_TOKEN_EXPIRY },
+    { expiresIn: process.env.ACCESS_TOKEN_EXPIRY },
   );
 };
 
@@ -103,7 +103,7 @@ userSchema.methods.generateRefreshToken = function () {
       _id: this._id,
     },
     process.env.REFRESH_TOKEN_SECRET,
-    { expiresIn: REFRESH_TOKEN_EXPIRY },
+    { expiresIn: process.env.REFRESH_TOKEN_EXPIRY },
   );
 };
 
